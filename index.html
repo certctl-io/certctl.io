@@ -726,13 +726,18 @@
     <section class="hero">
       <div class="container">
         <span class="hero-eyebrow"><span class="dot"></span><span data-gh-version>v2.0</span> — open core, free</span>
-        <h1>One control plane for every TLS certificate in your fleet.</h1>
+        <h1>47-day TLS certs<br>are coming. Forever.</h1>
         <p class="hero-sub">
-          certctl is a self-hosted platform for the entire TLS certificate lifecycle.<br>
-          <strong>Issue, deploy, monitor, renew, and revoke</strong> certificates from any
-          CA — across NGINX, Apache, HAProxy, F5, Kubernetes, and 7 other targets.
-          Works with Let&rsquo;s Encrypt, ACME, EST, step-ca, OpenSSL, and your own
-          internal CA.
+          The CA/Browser Forum&rsquo;s <strong>SC-081v3 ballot</strong> caps public
+          TLS certificates at <strong>200 days by March 2026</strong>,
+          <strong>100 days by 2027</strong>, and <strong>47 days by 2029</strong>.
+          A team managing 100 certificates ships 7+ renewals per week. Forever.
+          Manual workflows are a math problem, not a tooling preference.
+        </p>
+        <p class="hero-sub">
+          certctl automates the entire certificate lifecycle &mdash; <strong>issue,
+          deploy, monitor, renew, revoke</strong> &mdash; across every server in
+          your fleet. Any CA. Any target. Self-hosted. Free.
         </p>
 
         <div class="code-block" aria-label="Quick start commands">
@@ -763,46 +768,35 @@
     </section>
 
     <!-- =====================================================================
-         01 — Problem
+         01 — Why self-hosted (compressed from old "Problem" section now that
+                              the urgency is in the hero)
          ===================================================================== -->
-    <section id="problem">
+    <section id="why-self-hosted">
       <div class="container">
-        <p class="eyebrow"><span class="num">01</span> &nbsp;/&nbsp; problem</p>
-        <h2>TLS certificate lifespans are collapsing.</h2>
+        <p class="eyebrow"><span class="num">01</span> &nbsp;/&nbsp; why self-hosted</p>
+        <h2>Enterprise PKI platforms charge $100K+/year for this.</h2>
         <div class="problem-grid">
           <div>
             <p>
-              The CA/Browser Forum passed Ballot SC-081v3 unanimously in April 2025.
-              Public TLS certificates will be capped at <strong style="color:var(--text)">200 days by March 2026</strong>,
-              <strong style="color:var(--text)">100 days by March 2027</strong>, and
-              <strong style="color:var(--text)">47 days by March 2029</strong>. The phased
-              reduction is locked in — the implementation question is whether your
-              ops team is ready.
-            </p>
-            <p>
-              Most teams aren&rsquo;t. Spreadsheets, calendar reminders, and ad-hoc
-              renewal scripts work at 397-day lifespans. They break at 47-day
-              lifespans, where every certificate must be renewed and redeployed
-              roughly eight times per year.
+              Cloud certificate platforms route your enrollment traffic through
+              their infrastructure, store your private CA keys on their hardware,
+              and bill per certificate. Cheapest enterprise tiers with reasonable
+              features start around $80K/year. Your fleet grows; the bill grows.
             </p>
           </div>
           <div>
             <p>
-              Enterprise platforms charge $100K+/year to handle this. They lock you
-              into their ecosystem, store your private keys on their infrastructure,
-              and bill per certificate.
-            </p>
-            <p>
-              certctl handles the same lifecycle — issuance through deployment
-              through revocation — on your hardware, with your CA, under your
-              control. Free. Open core. Source-available under BSL 1.1.
+              certctl handles the same lifecycle on <strong style="color:var(--text)">your</strong>
+              hardware, under <strong style="color:var(--text)">your</strong>
+              control. Open core under BSL 1.1. No per-cert pricing. No per-agent
+              fees. No per-feature gates. The architecture is pull-only — the
+              control plane never reaches into your network. Agents poll for
+              work; private keys never leave the host.
             </p>
           </div>
           <blockquote class="pull-quote">
-            At 47-day lifespans, a team managing 100 certificates is processing
-            7+ renewals per week. Forever. Manual workflows are a math problem,
-            not a tooling preference.
-            <span class="source">— RFC reality check</span>
+            Your keys. Your hardware. Your data. Your terms.
+            <span class="source">— self-hosted, by design</span>
           </blockquote>
         </div>
       </div>
@@ -894,42 +888,42 @@
         <div class="feat-grid">
           <div class="feat">
             <div class="feat-icon">// 01</div>
-            <h3>Multi-CA orchestration</h3>
+            <h3>Use any CA you already trust</h3>
             <p>ACME (Let&rsquo;s Encrypt, ZeroSSL, Google Trust Services), step-ca, OpenSSL, Local CA, AWS ACM PCA, DigiCert, Entrust, GlobalSign, EJBCA, Vault.</p>
           </div>
           <div class="feat">
             <div class="feat-icon">// 02</div>
-            <h3>Agent-driven deployment</h3>
+            <h3>Deploy automatically to any server</h3>
             <p>NGINX, Apache, HAProxy, Traefik, Caddy, Envoy, Postfix/Dovecot, F5 BIG-IP, IIS, Java keystore, Kubernetes Secrets, SSH, Windows cert store.</p>
           </div>
           <div class="feat">
             <div class="feat-icon">// 03</div>
-            <h3>Discovery</h3>
+            <h3>Find every cert you forgot about</h3>
             <p>Filesystem scanning on agents. Network TLS probing across CIDR ranges. Cloud secret manager imports (AWS SM, Azure KV, GCP SM).</p>
           </div>
           <div class="feat">
             <div class="feat-icon">// 04</div>
-            <h3>Revocation infrastructure</h3>
+            <h3>Revoke in seconds, RFC-compliant</h3>
             <p>RFC 5280 CRL generation. RFC 6960 OCSP responder. Per-issuer signing keys. Cached responses. Short-lived cert exemption.</p>
           </div>
           <div class="feat">
             <div class="feat-icon">// 05</div>
-            <h3>Alerting &amp; notifications</h3>
+            <h3>Catch failures before they hit production</h3>
             <p>Slack, Microsoft Teams, PagerDuty, OpsGenie, email (SMTP), webhooks. Per-policy retry with exponential backoff. Audit-trail of every dispatch.</p>
           </div>
           <div class="feat">
             <div class="feat-icon">// 06</div>
-            <h3>Dashboard &amp; observability</h3>
+            <h3>Run your fleet from one dashboard</h3>
             <p>35-page React SPA. Prometheus metrics. Fleet overview, expiration heatmap, issuance pipelines, audit trail, policy editor.</p>
           </div>
           <div class="feat">
             <div class="feat-icon">// 07</div>
-            <h3>Standards compliance</h3>
+            <h3>Speaks every protocol that matters</h3>
             <p>EST (RFC 7030), SCEP (RFC 8894 + Microsoft Intune), ACME ARI (RFC 9702), ACME EAB, S/MIME, channel binding (RFC 9266), NIST PQC (planned).</p>
           </div>
           <div class="feat">
             <div class="feat-icon">// 08</div>
-            <h3>API + CLI + MCP</h3>
+            <h3>REST, CLI, MCP — wire it into anything</h3>
             <p>~95 REST endpoints with OpenAPI spec. CLI for every operation. MCP server with 76 tools for AI-assistant integration. All optional, all auth-gated.</p>
           </div>
         </div>
