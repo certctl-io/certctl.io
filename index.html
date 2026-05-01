@@ -706,11 +706,11 @@
           <li><a href="https://demo.certctl.io">Demo</a></li>
           <li><a href="https://github.com/shankar0123/certctl/discussions">Community</a></li>
           <li class="always-show">
-            <a class="nav-stars" href="https://github.com/shankar0123/certctl" aria-label="View on GitHub">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-              <span>star</span>
+            <a class="nav-stars" href="https://github.com/shankar0123/certctl" aria-label="Star certctl on GitHub">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"/></svg>
+              <span>Star</span>
               <span class="sep" style="color:var(--text-subtle)">·</span>
-              <img src="https://img.shields.io/github/stars/shankar0123/certctl?style=social&label=" alt="" style="height:14px; vertical-align:middle;" loading="lazy">
+              <span data-gh-stars>—</span>
             </a>
           </li>
         </ul>
@@ -1057,8 +1057,8 @@
 
         <div class="community-grid">
           <a class="comm" href="https://github.com/shankar0123/certctl/discussions">
-            <h3>GitHub Discussions</h3>
-            <p>Q&amp;A, feature requests, show &amp; tell. Where the community lives.</p>
+            <h3>Ask a question</h3>
+            <p>Q&amp;A, feature requests, show &amp; tell. The maintainer reads everything and usually responds within a day.</p>
             <span class="arrow-link">github.com/shankar0123/certctl/discussions →</span>
           </a>
           <a class="comm" href="https://github.com/shankar0123/certctl/issues">
@@ -1117,7 +1117,13 @@
       </div>
       <div class="footer-base">
         <span>© 2026 certctl. Source-available under BSL 1.1.</span>
-        <span>certctl.io &middot; built and self-hosted</span>
+        <span>
+          Built and maintained by
+          <!-- TODO: confirm/replace LinkedIn URL before push.
+               Best guess based on shankar0123 GitHub handle: -->
+          <a href="https://www.linkedin.com/in/shankar0123/" rel="me noopener">Shankar</a>
+          &middot; certctl.io
+        </span>
       </div>
     </div>
   </footer>
@@ -1138,41 +1144,78 @@
        style="position:absolute;left:-9999px;top:-9999px;">
 
   <!-- =====================================================================
-       Live release tag — pulls the latest GitHub release name into every
-       element with [data-gh-version]. Cached in localStorage for 6h to stay
-       comfortably under GitHub's 60-req/hour unauthenticated rate limit.
-       Failure mode: the static "v2.0" fallback baked into the HTML stays
-       on the page. No JS dependencies; total ~700 bytes.
+       Live GitHub data — pulls the latest release tag into every element
+       with [data-gh-version] and the current stargazer count into every
+       element with [data-gh-stars]. Two API calls (releases/latest +
+       repos/<repo>) in parallel, combined-cached in localStorage for 6h
+       so we burn at most ~8 unauth API calls/day per visitor (GitHub's
+       limit is 60/hr/IP).
+
+       Failure modes:
+         - Network failed → the static fallbacks ("v2.0" for version,
+           "—" for stars) stay on screen.
+         - localStorage disabled → fetches still run, just no caching.
+         - One endpoint fails, other succeeds → only the successful field
+           updates; the other shows fallback.
+
+       No JS dependencies; total ~1.1 KB inline.
        ===================================================================== -->
   <script>
     (function () {
-      var KEY = 'certctl.gh.version';
+      var KEY = 'certctl.gh.cache';
       var TTL = 6 * 60 * 60 * 1000; // 6 hours
-      var els = document.querySelectorAll('[data-gh-version]');
-      if (!els.length) return;
+      var REPO = 'shankar0123/certctl';
 
-      function paint(v) { for (var i = 0; i < els.length; i++) els[i].textContent = v; }
+      function formatStars(n) {
+        if (n < 1000) return String(n);
+        if (n < 10000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+        if (n < 1000000) return Math.round(n / 1000) + 'k';
+        return (n / 1000000).toFixed(1) + 'M';
+      }
 
+      function paint(data) {
+        if (data.version) {
+          document.querySelectorAll('[data-gh-version]').forEach(function (el) {
+            el.textContent = data.version;
+          });
+        }
+        if (data.stars !== undefined && data.stars !== null) {
+          var formatted = formatStars(data.stars);
+          document.querySelectorAll('[data-gh-stars]').forEach(function (el) {
+            el.textContent = formatted;
+          });
+        }
+      }
+
+      // Read cache
       try {
         var cached = JSON.parse(localStorage.getItem(KEY) || 'null');
-        if (cached && cached.v && (Date.now() - cached.t) < TTL) {
-          paint(cached.v);
+        if (cached && cached.t && (Date.now() - cached.t) < TTL) {
+          paint(cached);
           return; // fresh enough, skip the network
         }
-      } catch (e) { /* localStorage may be disabled — fall through */ }
+      } catch (e) { /* localStorage disabled — fall through to fetch */ }
 
-      fetch('https://api.github.com/repos/shankar0123/certctl/releases/latest', {
-        headers: { 'Accept': 'application/vnd.github+json' }
-      })
-        .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (d) {
-          if (!d) return;
-          var v = d.tag_name || d.name;
-          if (!v) return;
-          paint(v);
-          try { localStorage.setItem(KEY, JSON.stringify({ v: v, t: Date.now() })); } catch (e) {}
-        })
-        .catch(function () { /* network failed — fallback already on screen */ });
+      // Fetch repo info + latest release in parallel
+      var headers = { 'Accept': 'application/vnd.github+json' };
+      Promise.all([
+        fetch('https://api.github.com/repos/' + REPO, { headers: headers })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .catch(function () { return null; }),
+        fetch('https://api.github.com/repos/' + REPO + '/releases/latest', { headers: headers })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .catch(function () { return null; })
+      ]).then(function (results) {
+        var repo = results[0];
+        var release = results[1];
+        var data = {
+          stars: repo ? repo.stargazers_count : undefined,
+          version: release ? (release.tag_name || release.name) : undefined,
+          t: Date.now()
+        };
+        paint(data);
+        try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) {}
+      });
     })();
   </script>
 </body>
