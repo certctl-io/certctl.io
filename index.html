@@ -983,6 +983,21 @@
   </footer>
 
   <!-- =====================================================================
+       Scarf analytics pixel — counts certctl.io visits and attributes
+       referrers (Reddit, HN, Twitter, search, direct). 1x1 transparent
+       image, off-screen, no lazy-load (so the request fires on every
+       page load regardless of scroll position). The
+       referrerpolicy="no-referrer-when-downgrade" is what makes the
+       referrer header reach Scarf — without it, modern browsers strip
+       the referrer on cross-origin image loads, breaking attribution.
+       Dashboard: app.scarf.sh.
+       ===================================================================== -->
+  <img referrerpolicy="no-referrer-when-downgrade"
+       src="https://static.scarf.sh/a.png?x-pxid=b9379aff-9e5c-4d01-8f2d-9e4ffa09d126"
+       alt="" width="1" height="1"
+       style="position:absolute;left:-9999px;top:-9999px;">
+
+  <!-- =====================================================================
        Live release tag — pulls the latest GitHub release name into every
        element with [data-gh-version]. Cached in localStorage for 6h to stay
        comfortably under GitHub's 60-req/hour unauthenticated rate limit.
