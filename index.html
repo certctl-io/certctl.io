@@ -1,0 +1,1024 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+
+  <title>certctl — Self-hosted TLS certificate lifecycle management</title>
+  <meta name="description" content="A self-hosted control plane for the TLS certificate lifecycle: issue, deploy, monitor, renew, and revoke certificates across every server in your fleet. Any CA, any target, any scale. Open core, free, BSL 1.1.">
+
+  <!-- Open Graph / Twitter -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://certctl.io/">
+  <meta property="og:title" content="certctl — Self-hosted TLS certificate lifecycle management">
+  <meta property="og:description" content="One control plane for every TLS certificate in your fleet. Issue, deploy, monitor, renew, revoke — across NGINX, Apache, HAProxy, F5, Kubernetes, and 7 other targets.">
+  <meta property="og:image" content="https://certctl.io/screenshot-dashboard.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="certctl">
+  <meta name="twitter:description" content="One control plane for every TLS certificate in your fleet.">
+  <meta name="twitter:image" content="https://certctl.io/screenshot-dashboard.png">
+
+  <link rel="canonical" href="https://certctl.io/">
+  <link rel="icon" type="image/png" href="favicon-32.png">
+  <link rel="apple-touch-icon" href="favicon-32.png">
+
+  <style>
+    /* --------------------------------------------------------------------
+       certctl.io landing — handwritten CSS, technical/monospace-leaning
+       aesthetic. No CDN, no build step, no JavaScript dependencies.
+       Single file. Cloudflare Pages serves this directly.
+    -------------------------------------------------------------------- */
+
+    :root {
+      --bg: #ffffff;
+      --bg-soft: #fafaf7;
+      --bg-code: #f4f4f0;
+      --text: #0f1115;
+      --text-muted: #5c6470;
+      --text-subtle: #8c95a1;
+      --border: #e4e7eb;
+      --border-strong: #1f2937;
+      --accent: #0b5fff;
+      --accent-soft: #edf1ff;
+      --green: #0a8754;
+      --max: 1120px;
+
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Menlo", Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      margin: 0;
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: color .15s ease;
+    }
+    a:hover { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+
+    code, kbd, samp, pre {
+      font-family: var(--font-mono);
+      font-size: .92em;
+    }
+
+    /* ---------- container ---------- */
+    .container {
+      width: 100%;
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ---------- header ---------- */
+    header.site {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: saturate(160%) blur(8px);
+      -webkit-backdrop-filter: saturate(160%) blur(8px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 17px;
+      letter-spacing: -.01em;
+      color: var(--text);
+    }
+    .brand:hover { color: var(--text); text-decoration: none; }
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .brand-mark img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+    }
+    .nav-links a { color: var(--text-muted); }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .nav-stars {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+    .nav-stars:hover { border-color: var(--text); text-decoration: none; }
+
+    /* ---------- generic section scaffolding ---------- */
+    section {
+      border-top: 1px solid var(--border);
+      padding: 96px 0;
+    }
+    section:first-of-type { border-top: 0; }
+
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      font-weight: 500;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      margin: 0 0 18px;
+    }
+    .eyebrow .num { color: var(--text); }
+
+    h1, h2, h3, h4 {
+      font-family: var(--font-sans);
+      font-weight: 600;
+      letter-spacing: -.02em;
+      color: var(--text);
+      margin: 0 0 20px;
+    }
+    h1 { font-size: clamp(34px, 5.5vw, 56px); line-height: 1.07; }
+    h2 { font-size: clamp(28px, 3.6vw, 40px); line-height: 1.15; }
+    h3 { font-size: 18px; line-height: 1.35; margin-bottom: 8px; }
+    p { margin: 0 0 14px; color: var(--text-muted); max-width: 64ch; }
+    p:last-child { margin-bottom: 0; }
+
+    /* ---------- hero ---------- */
+    .hero {
+      padding: 88px 0 96px;
+      border-top: 0;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 10px;
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+    .hero-eyebrow .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .5; }
+    }
+    .hero h1 {
+      max-width: 18ch;
+      margin-bottom: 24px;
+    }
+    .hero-sub {
+      font-size: 18px;
+      line-height: 1.55;
+      color: var(--text-muted);
+      max-width: 60ch;
+      margin: 0 0 36px;
+    }
+    .hero-sub strong { color: var(--text); font-weight: 600; }
+
+    .code-block {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      line-height: 1.7;
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px 20px;
+      margin: 0 0 28px;
+      overflow-x: auto;
+      position: relative;
+      white-space: pre;
+      tab-size: 4;
+    }
+    .code-block .prompt { color: var(--text-subtle); user-select: none; padding-right: 8px; }
+    .code-block .cmd { color: var(--text); }
+    .code-block .comment { color: var(--text-subtle); }
+
+    .cta-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 18px;
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      font-weight: 500;
+      border-radius: 7px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background .15s ease, border-color .15s ease, color .15s ease;
+    }
+    .btn-primary {
+      background: var(--text);
+      color: #fff;
+      border-color: var(--text);
+    }
+    .btn-primary:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      text-decoration: none;
+    }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border-color: var(--border);
+    }
+    .btn-secondary:hover {
+      border-color: var(--text);
+      color: var(--text);
+      text-decoration: none;
+    }
+    .btn .arrow { transition: transform .15s ease; }
+    .btn:hover .arrow { transform: translateX(2px); }
+
+    .hero-figure {
+      margin-top: 56px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 0 rgba(15,17,21,.04), 0 24px 48px -32px rgba(15,17,21,.18);
+    }
+    .hero-figure img { display: block; width: 100%; height: auto; }
+
+    /* ---------- problem ---------- */
+    .problem-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 56px;
+      align-items: start;
+    }
+    .problem-grid p {
+      font-size: 16.5px;
+      max-width: 56ch;
+    }
+    .pull-quote {
+      grid-column: 1 / -1;
+      margin: 32px 0 0;
+      padding: 28px 32px;
+      border-left: 3px solid var(--text);
+      background: var(--bg-soft);
+      font-family: var(--font-mono);
+      font-size: 16px;
+      line-height: 1.55;
+      color: var(--text);
+      max-width: none;
+    }
+    .pull-quote .source {
+      display: block;
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--text-subtle);
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    /* ---------- pricing banner (dark, inverted for visual punch) ---------- */
+    section.pricing-banner {
+      background: var(--text);
+      color: #fff;
+      text-align: center;
+      padding: 120px 0;
+      border-top: 0;
+      border-bottom: 1px solid var(--text);
+    }
+    .pricing-banner .container { max-width: 920px; }
+    .pricing-banner .eyebrow {
+      color: rgba(255,255,255,.6);
+      margin-bottom: 40px;
+      font-size: 17px;
+      letter-spacing: .18em;
+    }
+    .pricing-banner .eyebrow .num { color: rgba(255,255,255,.95); }
+    .pricing-headline {
+      font-size: clamp(30px, 5.5vw, 62px);
+      line-height: 1.05;
+      letter-spacing: -.03em;
+      font-weight: 600;
+      color: #fff;
+      max-width: 16ch;
+      margin: 0 auto 32px;
+    }
+    .pricing-body {
+      max-width: 60ch;
+      margin: 0 auto 28px;
+      color: rgba(255,255,255,.75);
+      font-size: 18px;
+      line-height: 1.6;
+    }
+    .pricing-body strong { color: #fff; font-weight: 600; }
+    .pricing-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 22px;
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      font-weight: 500;
+      color: #fff;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 7px;
+      transition: border-color .15s ease, background .15s ease;
+    }
+    .pricing-cta:hover {
+      border-color: #fff;
+      background: rgba(255,255,255,.06);
+      color: #fff;
+      text-decoration: none;
+    }
+    .pricing-cta .arrow { transition: transform .15s ease; }
+    .pricing-cta:hover .arrow { transform: translateX(2px); }
+    .pricing-cta-lead {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.5);
+      margin: 0 0 14px;
+    }
+
+    /* ---------- how it works ---------- */
+    .how-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+      margin-top: 12px;
+    }
+    .how-step {
+      padding: 28px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg);
+    }
+    .how-step .step-num {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-subtle);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .how-step h3 { margin-bottom: 8px; }
+    .how-step p { font-size: 14.5px; line-height: 1.6; }
+    .how-step .step-code {
+      margin-top: 16px;
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      color: var(--text);
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px;
+      overflow-x: auto;
+    }
+
+    /* ---------- features ---------- */
+    .feat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+    .feat {
+      background: var(--bg);
+      padding: 28px 24px;
+    }
+    .feat-icon {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      color: var(--accent);
+      letter-spacing: .04em;
+      margin-bottom: 14px;
+    }
+    .feat h3 {
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+    .feat p {
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    /* ---------- screenshots ---------- */
+    .shot-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 12px;
+    }
+    .shot {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--bg);
+    }
+    .shot img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-bottom: 1px solid var(--border);
+    }
+    .shot-caption {
+      padding: 14px 18px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .shot-caption .name { color: var(--text); }
+    .shot-caption .path { color: var(--text-subtle); }
+
+    /* ---------- community ---------- */
+    .community-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 12px;
+    }
+    .comm {
+      padding: 28px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg);
+      transition: border-color .15s ease, transform .15s ease;
+    }
+    .comm:hover {
+      border-color: var(--text);
+      text-decoration: none;
+      transform: translateY(-2px);
+    }
+    .comm h3 {
+      font-size: 17px;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+    .comm p {
+      font-size: 14.5px;
+      color: var(--text-muted);
+      margin: 0 0 14px;
+    }
+    .comm .arrow-link {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--accent);
+    }
+
+    /* ---------- footer ---------- */
+    footer.site {
+      border-top: 1px solid var(--border);
+      padding: 56px 0 80px;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 32px;
+      margin-bottom: 56px;
+    }
+    .footer-tag {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-muted);
+      max-width: 36ch;
+    }
+    .footer-col h4 {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      font-weight: 500;
+      margin: 0 0 14px;
+    }
+    .footer-col ul { list-style: none; padding: 0; margin: 0; }
+    .footer-col li { margin-bottom: 8px; }
+    .footer-col a {
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      color: var(--text);
+    }
+    .footer-col a:hover { color: var(--accent); text-decoration: none; }
+    .footer-base {
+      border-top: 1px solid var(--border);
+      padding-top: 28px;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      color: var(--text-subtle);
+    }
+
+    /* ---------- accessibility ---------- */
+    .skip {
+      position: absolute;
+      left: -9999px;
+      top: auto;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
+    .skip:focus {
+      position: static;
+      width: auto;
+      height: auto;
+      padding: 8px 12px;
+      background: var(--text);
+      color: #fff;
+    }
+
+    /* ---------- responsive ---------- */
+    @media (max-width: 960px) {
+      section { padding: 72px 0; }
+      .hero { padding: 56px 0 72px; }
+      .nav-links { gap: 18px; }
+      .problem-grid { grid-template-columns: 1fr; gap: 28px; }
+      .how-grid { grid-template-columns: 1fr; }
+      .feat-grid { grid-template-columns: 1fr 1fr; }
+      .community-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 640px) {
+      section { padding: 56px 0; }
+      .hero { padding: 40px 0 56px; }
+      .nav .nav-links li:not(.always-show) { display: none; }
+      .feat-grid { grid-template-columns: 1fr; }
+      .shot-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; gap: 28px; }
+      .footer-base { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to main content</a>
+
+  <!-- =====================================================================
+       Header / nav
+       ===================================================================== -->
+  <header class="site">
+    <div class="container">
+      <nav class="nav" aria-label="Primary">
+        <a class="brand" href="/" aria-label="certctl home">
+          <span class="brand-mark" aria-hidden="true">
+            <img src="logo-icon.png" alt="" width="32" height="32" loading="eager">
+          </span>
+          <span>certctl</span>
+        </a>
+        <ul class="nav-links">
+          <li><a href="https://github.com/shankar0123/certctl#readme">Docs</a></li>
+          <li><a href="https://demo.certctl.io">Demo</a></li>
+          <li><a href="https://github.com/shankar0123/certctl/discussions">Community</a></li>
+          <li class="always-show">
+            <a class="nav-stars" href="https://github.com/shankar0123/certctl" aria-label="View on GitHub">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+              <span>star</span>
+              <span class="sep" style="color:var(--text-subtle)">·</span>
+              <img src="https://img.shields.io/github/stars/shankar0123/certctl?style=social&label=" alt="" style="height:14px; vertical-align:middle;" loading="lazy">
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- =====================================================================
+         Hero
+         ===================================================================== -->
+    <section class="hero">
+      <div class="container">
+        <span class="hero-eyebrow"><span class="dot"></span><span data-gh-version>v2.0</span> — open core, free</span>
+        <h1>One control plane for every TLS certificate in your fleet.</h1>
+        <p class="hero-sub">
+          certctl is a self-hosted platform for the entire TLS certificate lifecycle.<br>
+          <strong>Issue, deploy, monitor, renew, and revoke</strong> certificates from any
+          CA — across NGINX, Apache, HAProxy, F5, Kubernetes, and 7 other targets.
+          Works with Let&rsquo;s Encrypt, ACME, EST, step-ca, OpenSSL, and your own
+          internal CA.
+        </p>
+
+        <div class="code-block" aria-label="Quick start commands">
+<span class="comment"># Three commands. One control plane.</span>
+<span class="prompt">$</span><span class="cmd"> git clone https://github.com/shankar0123/certctl.git</span>
+<span class="prompt">$</span><span class="cmd"> cd certctl &amp;&amp; docker compose -f deploy/docker-compose.yml up -d</span>
+<span class="prompt">$</span><span class="cmd"> open https://localhost:8443</span>
+        </div>
+
+        <div class="cta-row">
+          <a class="btn btn-primary" href="https://github.com/shankar0123/certctl">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+            View on GitHub
+            <span class="arrow">→</span>
+          </a>
+          <a class="btn btn-secondary" href="https://demo.certctl.io">
+            Try the live demo <span class="arrow">→</span>
+          </a>
+          <a class="btn btn-secondary" href="https://github.com/shankar0123/certctl#readme">
+            Read the docs <span class="arrow">→</span>
+          </a>
+        </div>
+
+        <figure class="hero-figure" aria-label="certctl dashboard">
+          <img src="screenshot-dashboard.png" alt="certctl v2 dashboard — fleet overview, cert inventory, expiration heatmap, issuance metrics" loading="eager" width="2400" height="1500">
+        </figure>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         01 — Problem
+         ===================================================================== -->
+    <section id="problem">
+      <div class="container">
+        <p class="eyebrow"><span class="num">01</span> &nbsp;/&nbsp; problem</p>
+        <h2>TLS certificate lifespans are collapsing.</h2>
+        <div class="problem-grid">
+          <div>
+            <p>
+              The CA/Browser Forum passed Ballot SC-081v3 unanimously in April 2025.
+              Public TLS certificates will be capped at <strong style="color:var(--text)">200 days by March 2026</strong>,
+              <strong style="color:var(--text)">100 days by March 2027</strong>, and
+              <strong style="color:var(--text)">47 days by March 2029</strong>. The phased
+              reduction is locked in — the implementation question is whether your
+              ops team is ready.
+            </p>
+            <p>
+              Most teams aren&rsquo;t. Spreadsheets, calendar reminders, and ad-hoc
+              renewal scripts work at 397-day lifespans. They break at 47-day
+              lifespans, where every certificate must be renewed and redeployed
+              roughly eight times per year.
+            </p>
+          </div>
+          <div>
+            <p>
+              Enterprise platforms charge $100K+/year to handle this. They lock you
+              into their ecosystem, store your private keys on their infrastructure,
+              and bill per certificate.
+            </p>
+            <p>
+              certctl handles the same lifecycle — issuance through deployment
+              through revocation — on your hardware, with your CA, under your
+              control. Free. Open core. Source-available under BSL 1.1.
+            </p>
+          </div>
+          <blockquote class="pull-quote">
+            At 47-day lifespans, a team managing 100 certificates is processing
+            7+ renewals per week. Forever. Manual workflows are a math problem,
+            not a tooling preference.
+            <span class="source">— RFC reality check</span>
+          </blockquote>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         Pricing — dark-inverted banner, transitions from "problem" to "how"
+         ===================================================================== -->
+    <section class="pricing-banner" id="pricing">
+      <div class="container">
+        <p class="eyebrow"><span class="num">·</span> &nbsp;/&nbsp; pricing</p>
+        <h2 class="pricing-headline">We scale with you. Our prices don't.</h2>
+        <p class="pricing-body">
+          <strong>Free. Forever.</strong> Open core under BSL 1.1. No per-cert
+          pricing. No per-agent fees. Run it on a Raspberry Pi or a 100-node
+          cluster — same software, same price. The only thing you pay for is
+          your own infrastructure.
+        </p>
+        <span class="pricing-cta-lead">Need SSO, paid support, or compliance attestations?</span>
+        <a class="pricing-cta" href="mailto:hello@certctl.io?subject=certctl%20enterprise%20enquiry">
+          Talk to us <span class="arrow">→</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         02 — How it works
+         ===================================================================== -->
+    <section id="how">
+      <div class="container">
+        <p class="eyebrow"><span class="num">02</span> &nbsp;/&nbsp; how it works</p>
+        <h2>Three commands to a fleet-wide control plane.</h2>
+        <p style="margin-bottom: 32px;">
+          The control plane runs anywhere Docker does. Agents install with a single
+          curl. The dashboard ships in the same container. Pull-only architecture —
+          the server never reaches into your network.
+        </p>
+
+        <div class="how-grid">
+          <article class="how-step">
+            <div class="step-num">step 01</div>
+            <h3>Deploy the control plane</h3>
+            <p>
+              Single Docker Compose stack: certctl-server, agent registry, Postgres.
+              Self-signed bootstrap TLS by default; bring your own ACME / sub-CA cert
+              when you&rsquo;re ready.
+            </p>
+            <div class="step-code">$ docker compose up -d</div>
+          </article>
+
+          <article class="how-step">
+            <div class="step-num">step 02</div>
+            <h3>Install agents on your servers</h3>
+            <p>
+              Agents poll the server, generate keys locally, and submit CSRs.
+              Private keys never leave the host. Single binary; works on Linux,
+              macOS, Windows, ARM, x86.
+            </p>
+            <div class="step-code">$ curl install.certctl.io | sh</div>
+          </article>
+
+          <article class="how-step">
+            <div class="step-num">step 03</div>
+            <h3>Manage from one dashboard</h3>
+            <p>
+              35-page web UI for cert inventory, agent fleet, issuance pipelines,
+              audit trail, and policy management. Plus REST API, CLI, and an MCP
+              server for agentic workflows.
+            </p>
+            <div class="step-code">→ https://localhost:8443</div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         03 — Feature grid
+         ===================================================================== -->
+    <section id="features">
+      <div class="container">
+        <p class="eyebrow"><span class="num">03</span> &nbsp;/&nbsp; capabilities</p>
+        <h2>Everything the lifecycle requires.</h2>
+        <p style="margin-bottom: 32px; max-width: 56ch;">
+          A real cert lifecycle is more than ACME. certctl ships the full stack:
+          discovery, issuance, deployment, monitoring, revocation, alerting, audit.
+          Every connector is pluggable; every interface is documented.
+        </p>
+
+        <div class="feat-grid">
+          <div class="feat">
+            <div class="feat-icon">// 01</div>
+            <h3>Multi-CA orchestration</h3>
+            <p>ACME (Let&rsquo;s Encrypt, ZeroSSL, Google Trust Services), step-ca, OpenSSL, Local CA, AWS ACM PCA, DigiCert, Entrust, GlobalSign, EJBCA, Vault.</p>
+          </div>
+          <div class="feat">
+            <div class="feat-icon">// 02</div>
+            <h3>Agent-driven deployment</h3>
+            <p>NGINX, Apache, HAProxy, Traefik, Caddy, Envoy, Postfix/Dovecot, F5 BIG-IP, IIS, Java keystore, Kubernetes Secrets, SSH, Windows cert store.</p>
+          </div>
+          <div class="feat">
+            <div class="feat-icon">// 03</div>
+            <h3>Discovery</h3>
+            <p>Filesystem scanning on agents. Network TLS probing across CIDR ranges. Cloud secret manager imports (AWS SM, Azure KV, GCP SM).</p>
+          </div>
+          <div class="feat">
+            <div class="feat-icon">// 04</div>
+            <h3>Revocation infrastructure</h3>
+            <p>RFC 5280 CRL generation. RFC 6960 OCSP responder. Per-issuer signing keys. Cached responses. Short-lived cert exemption.</p>
+          </div>
+          <div class="feat">
+            <div class="feat-icon">// 05</div>
+            <h3>Alerting &amp; notifications</h3>
+            <p>Slack, Microsoft Teams, PagerDuty, OpsGenie, email (SMTP), webhooks. Per-policy retry with exponential backoff. Audit-trail of every dispatch.</p>
+          </div>
+          <div class="feat">
+            <div class="feat-icon">// 06</div>
+            <h3>Dashboard &amp; observability</h3>
+            <p>35-page React SPA. Prometheus metrics. Fleet overview, expiration heatmap, issuance pipelines, audit trail, policy editor.</p>
+          </div>
+          <div class="feat">
+            <div class="feat-icon">// 07</div>
+            <h3>Standards compliance</h3>
+            <p>EST (RFC 7030), SCEP (RFC 8894 + Microsoft Intune), ACME ARI (RFC 9702), ACME EAB, S/MIME, channel binding (RFC 9266), NIST PQC (planned).</p>
+          </div>
+          <div class="feat">
+            <div class="feat-icon">// 08</div>
+            <h3>API + CLI + MCP</h3>
+            <p>~95 REST endpoints with OpenAPI spec. CLI for every operation. MCP server with 76 tools for AI-assistant integration. All optional, all auth-gated.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         04 — Screenshots
+         ===================================================================== -->
+    <section id="dashboard">
+      <div class="container">
+        <p class="eyebrow"><span class="num">04</span> &nbsp;/&nbsp; dashboard</p>
+        <h2>What you actually see.</h2>
+        <p style="margin-bottom: 32px;">
+          The dashboard is the operator&rsquo;s primary interface — but every action
+          here has an equivalent CLI command and REST endpoint. Use whichever
+          surface fits the workflow.
+        </p>
+
+        <div class="shot-grid">
+          <figure class="shot">
+            <img src="screenshot-dashboard.png" alt="Fleet overview dashboard" loading="lazy">
+            <figcaption class="shot-caption">
+              <span class="name">Fleet overview</span>
+              <span class="path">/dashboard</span>
+            </figcaption>
+          </figure>
+          <figure class="shot">
+            <img src="screenshot-certificates.png" alt="Certificate inventory page" loading="lazy">
+            <figcaption class="shot-caption">
+              <span class="name">Certificate inventory</span>
+              <span class="path">/certificates</span>
+            </figcaption>
+          </figure>
+          <figure class="shot">
+            <img src="screenshot-fleet.png" alt="Agent fleet management page" loading="lazy">
+            <figcaption class="shot-caption">
+              <span class="name">Agent fleet</span>
+              <span class="path">/agents</span>
+            </figcaption>
+          </figure>
+          <figure class="shot">
+            <img src="screenshot-jobs.png" alt="Issuance jobs and pipelines page" loading="lazy">
+            <figcaption class="shot-caption">
+              <span class="name">Issuance pipelines</span>
+              <span class="path">/jobs</span>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         05 — Community
+         ===================================================================== -->
+    <section id="community">
+      <div class="container">
+        <p class="eyebrow"><span class="num">05</span> &nbsp;/&nbsp; community</p>
+        <h2>Built in the open.</h2>
+        <p style="margin-bottom: 32px;">
+          certctl is BSL 1.1 source-available. The roadmap is public, the audit
+          trail of every release is in git, and the maintainer&rsquo;s Discussions
+          are open to anyone with a GitHub account.
+        </p>
+
+        <div class="community-grid">
+          <a class="comm" href="https://github.com/shankar0123/certctl/discussions">
+            <h3>GitHub Discussions</h3>
+            <p>Q&amp;A, feature requests, show &amp; tell. Where the community lives.</p>
+            <span class="arrow-link">github.com/shankar0123/certctl/discussions →</span>
+          </a>
+          <a class="comm" href="https://github.com/shankar0123/certctl/issues">
+            <h3>Issue tracker</h3>
+            <p>Bug reports, security disclosures, planned work — all public.</p>
+            <span class="arrow-link">github.com/shankar0123/certctl/issues →</span>
+          </a>
+          <a class="comm" href="https://github.com/shankar0123/certctl#readme">
+            <h3>Documentation</h3>
+            <p>Architecture, connector reference, deployment guides, API spec.</p>
+            <span class="arrow-link">github.com/shankar0123/certctl#readme →</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =====================================================================
+       Footer
+       ===================================================================== -->
+  <footer class="site">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="/" aria-label="certctl home" style="display: inline-block; margin-bottom: 18px;">
+            <img src="logo-footer.png" alt="certctl" width="120" height="117" style="display: block; height: auto; max-width: 120px;">
+          </a>
+          <p class="footer-tag">Self-hosted TLS certificate lifecycle management.</p>
+          <p class="footer-tag">Issue, deploy, monitor, renew, revoke.</p>
+          <p class="footer-tag">Any CA. Any target. Any scale.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Product</h4>
+          <ul>
+            <li><a href="https://github.com/shankar0123/certctl#readme">Documentation</a></li>
+            <li><a href="https://demo.certctl.io">Live demo</a></li>
+            <li><a href="https://github.com/shankar0123/certctl/releases">Releases</a></li>
+            <li><a href="https://github.com/shankar0123/certctl/blob/master/docs/architecture.md">Architecture</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Community</h4>
+          <ul>
+            <li><a href="https://github.com/shankar0123/certctl">GitHub</a></li>
+            <li><a href="https://github.com/shankar0123/certctl/discussions">Discussions</a></li>
+            <li><a href="https://github.com/shankar0123/certctl/issues">Issues</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="https://github.com/shankar0123/certctl/blob/master/LICENSE">License (BSL 1.1)</a></li>
+            <li><a href="https://github.com/shankar0123/certctl/security">Security</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-base">
+        <span>© 2026 certctl. Source-available under BSL 1.1.</span>
+        <span>certctl.io &middot; built and self-hosted</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- =====================================================================
+       Live release tag — pulls the latest GitHub release name into every
+       element with [data-gh-version]. Cached in localStorage for 6h to stay
+       comfortably under GitHub's 60-req/hour unauthenticated rate limit.
+       Failure mode: the static "v2.0" fallback baked into the HTML stays
+       on the page. No JS dependencies; total ~700 bytes.
+       ===================================================================== -->
+  <script>
+    (function () {
+      var KEY = 'certctl.gh.version';
+      var TTL = 6 * 60 * 60 * 1000; // 6 hours
+      var els = document.querySelectorAll('[data-gh-version]');
+      if (!els.length) return;
+
+      function paint(v) { for (var i = 0; i < els.length; i++) els[i].textContent = v; }
+
+      try {
+        var cached = JSON.parse(localStorage.getItem(KEY) || 'null');
+        if (cached && cached.v && (Date.now() - cached.t) < TTL) {
+          paint(cached.v);
+          return; // fresh enough, skip the network
+        }
+      } catch (e) { /* localStorage may be disabled — fall through */ }
+
+      fetch('https://api.github.com/repos/shankar0123/certctl/releases/latest', {
+        headers: { 'Accept': 'application/vnd.github+json' }
+      })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          if (!d) return;
+          var v = d.tag_name || d.name;
+          if (!v) return;
+          paint(v);
+          try { localStorage.setItem(KEY, JSON.stringify({ v: v, t: Date.now() })); } catch (e) {}
+        })
+        .catch(function () { /* network failed — fallback already on screen */ });
+    })();
+  </script>
+</body>
+</html>
