@@ -296,6 +296,20 @@
       padding: 2px 6px;
       margin-left: 6px;
     }
+    /* Compact disabled state for inline links (nav, footer) — different
+       from .btn-disabled which is sized for buttons. Same intent
+       (visually muted, not clickable, signals coming-soon) but text-only. */
+    .link-disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+      user-select: none;
+    }
+    .soon-suffix {
+      font-size: 0.85em;
+      margin-left: 3px;
+      color: var(--text-subtle);
+    }
 
     .hero-figure {
       margin-top: 56px;
@@ -703,7 +717,7 @@
         </a>
         <ul class="nav-links">
           <li><a href="https://github.com/shankar0123/certctl#readme">Docs</a></li>
-          <li><a href="https://demo.certctl.io">Demo</a></li>
+          <li><span class="link-disabled" aria-disabled="true">Demo <span class="soon-suffix">(soon)</span></span></li>
           <li><a href="https://github.com/shankar0123/certctl/discussions">Community</a></li>
           <li class="always-show">
             <a class="nav-stars" href="https://github.com/shankar0123/certctl" aria-label="Star certctl on GitHub">
@@ -1088,7 +1102,7 @@
           <h4>Product</h4>
           <ul>
             <li><a href="https://github.com/shankar0123/certctl#readme">Documentation</a></li>
-            <li><a href="https://demo.certctl.io">Live demo</a></li>
+            <li><span class="link-disabled" aria-disabled="true">Live demo <span class="soon-suffix">(soon)</span></span></li>
             <li><a href="https://github.com/shankar0123/certctl/releases">Releases</a></li>
             <li><a href="https://github.com/shankar0123/certctl/blob/master/docs/architecture.md">Architecture</a></li>
           </ul>
