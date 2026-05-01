@@ -421,6 +421,68 @@
       overflow-x: auto;
     }
 
+    /* ---------- positioning ---------- */
+    .why-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      margin: 12px 0 36px;
+    }
+    .why-col {
+      padding: 28px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg);
+    }
+    .why-col-active {
+      border-color: var(--text);
+      border-width: 2px;
+      padding: 27px;
+    }
+    .why-label {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      margin: 0 0 14px;
+    }
+    .why-col-active .why-label { color: var(--accent); }
+    .why-col h3 { font-size: 18px; margin-bottom: 16px; }
+    .why-list { list-style: none; padding: 0; margin: 0; }
+    .why-list li {
+      position: relative;
+      padding-left: 18px;
+      margin-bottom: 10px;
+      font-size: 14.5px;
+      line-height: 1.55;
+      color: var(--text-muted);
+    }
+    .why-list li::before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: var(--text-subtle);
+      font-family: var(--font-mono);
+    }
+    .why-col-active .why-list li::before { color: var(--accent); }
+    .why-pairs {
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      line-height: 1.85;
+      color: var(--text-muted);
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 22px 28px;
+      margin: 0;
+      max-width: none;
+    }
+    .why-pairs strong { color: var(--text); font-weight: 600; }
+    @media (max-width: 960px) {
+      .why-grid { grid-template-columns: 1fr; }
+    }
+
     /* ---------- features ---------- */
     .feat-grid {
       display: grid;
@@ -857,11 +919,71 @@
     </section>
 
     <!-- =====================================================================
-         04 — Screenshots
+         04 — Positioning (lifecycle layer above any CA)
+         ===================================================================== -->
+    <section id="positioning">
+      <div class="container">
+        <p class="eyebrow"><span class="num">04</span> &nbsp;/&nbsp; positioning</p>
+        <h2>certctl is the lifecycle layer. Pick any CA underneath.</h2>
+        <p style="margin-bottom: 28px; max-width: 64ch;">
+          Most certificate authority software issues X.509 certificates,
+          maintains a CRL or OCSP responder, and hands you a PEM file. What
+          happens next &mdash; deploying that PEM to your NGINX, watching it
+          expire, renewing before it does, redeploying without downtime,
+          verifying the new cert is actually live, alerting when something
+          breaks &mdash; is your problem.
+        </p>
+        <p style="margin-bottom: 32px; max-width: 64ch;">
+          certctl is the layer that solves &ldquo;what happens next.&rdquo; It
+          pairs with any CA backend you already use, or its own built-in Local
+          CA for simple deployments and dev environments.
+        </p>
+
+        <div class="why-grid">
+          <article class="why-col">
+            <p class="why-label">where most PKI tooling stops</p>
+            <h3>Issuance + revocation</h3>
+            <ul class="why-list">
+              <li>Issues X.509 certificates</li>
+              <li>Maintains a CRL / OCSP responder</li>
+              <li>Exposes ACME / SCEP / EST enrollment endpoints</li>
+              <li>Stores private CA signing keys</li>
+            </ul>
+          </article>
+
+          <article class="why-col why-col-active">
+            <p class="why-label">where certctl picks up</p>
+            <h3>Lifecycle + fleet</h3>
+            <ul class="why-list">
+              <li>Discovers existing certs across your fleet (filesystem scan + TLS network probe + cloud secret managers)</li>
+              <li>Deploys to NGINX, Apache, HAProxy, Traefik, Caddy, Envoy, F5 BIG-IP, IIS, Java keystore, Kubernetes Secrets, Postfix + Dovecot, SSH, Windows Cert Store</li>
+              <li>Renews + redeploys atomically before expiry, with rollback on failure</li>
+              <li>Verifies the new cert is actually live via post-deploy TLS probe</li>
+              <li>Alerts via Slack, Microsoft Teams, PagerDuty, OpsGenie, email, webhooks</li>
+              <li>Maintains an append-only audit trail of every action</li>
+              <li>Web dashboard, REST API, full CLI, plus an MCP server for AI-assistant integration</li>
+            </ul>
+          </article>
+        </div>
+
+        <p class="why-pairs">
+          <strong>First-class issuer connectors:</strong>
+          ACME (Let&rsquo;s Encrypt, ZeroSSL, Google Trust Services, any RFC 8555
+          server), AWS Private CA, DigiCert, Entrust, GlobalSign, Google Cloud
+          CAS, HashiCorp Vault, OpenSSL, Sectigo, certctl&rsquo;s own Local CA,
+          plus self-hosted EST (RFC 7030) and SCEP (RFC 8894) backends.
+          <br>
+          Pick whichever fits your environment. certctl handles everything around it.
+        </p>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         05 — Screenshots
          ===================================================================== -->
     <section id="dashboard">
       <div class="container">
-        <p class="eyebrow"><span class="num">04</span> &nbsp;/&nbsp; dashboard</p>
+        <p class="eyebrow"><span class="num">05</span> &nbsp;/&nbsp; dashboard</p>
         <h2>What you actually see.</h2>
         <p style="margin-bottom: 32px;">
           The dashboard is the operator&rsquo;s primary interface — but every action
@@ -903,11 +1025,11 @@
     </section>
 
     <!-- =====================================================================
-         05 — Community
+         06 — Community
          ===================================================================== -->
     <section id="community">
       <div class="container">
-        <p class="eyebrow"><span class="num">05</span> &nbsp;/&nbsp; community</p>
+        <p class="eyebrow"><span class="num">06</span> &nbsp;/&nbsp; community</p>
         <h2>Built in the open.</h2>
         <p style="margin-bottom: 32px;">
           certctl is BSL 1.1 source-available. The roadmap is public, the audit
