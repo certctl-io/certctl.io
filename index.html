@@ -430,6 +430,9 @@
       border: 1px solid var(--border);
       border-radius: 10px;
       background: var(--bg);
+      /* Allow the grid track to shrink below content min-width so a long
+         install URL inside .step-code can't blow out the column. */
+      min-width: 0;
     }
     .how-step .step-num {
       font-family: var(--font-mono);
@@ -450,7 +453,12 @@
       border: 1px solid var(--border);
       border-radius: 6px;
       padding: 10px 12px;
-      overflow-x: auto;
+      /* Long URLs (e.g. the GitHub raw install-script URL) wrap cleanly
+         inside the card instead of forcing horizontal scroll or expanding
+         the grid track. `anywhere` lets the break happen at any character,
+         which is what URLs need (no spaces or hyphens to break on). */
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
 
     /* ---------- positioning ---------- */
