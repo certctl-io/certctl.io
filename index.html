@@ -756,7 +756,7 @@
         <div class="code-block" aria-label="Quick start commands">
 <span class="comment"># Three commands. One control plane. Seeded demo data.</span>
 <span class="prompt">$</span><span class="cmd"> git clone https://github.com/certctl-io/certctl.git</span>
-<span class="prompt">$</span><span class="cmd"> cd certctl &amp;&amp; docker compose -f deploy/docker-compose.demo.yml up -d</span>
+<span class="prompt">$</span><span class="cmd"> cd certctl &amp;&amp; docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.demo.yml up -d --build</span>
 <span class="prompt">$</span><span class="cmd"> open https://localhost:8443</span>
         </div>
 
