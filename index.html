@@ -12,7 +12,7 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://certctl.io/">
   <meta property="og:title" content="certctl — Self-hosted TLS certificate lifecycle management">
-  <meta property="og:description" content="One control plane for every TLS certificate in your fleet. Issue, deploy, monitor, renew, revoke — across NGINX, Apache, HAProxy, F5, Kubernetes, and 7 other targets.">
+  <meta property="og:description" content="One control plane for every TLS certificate in your fleet. Issue, deploy, monitor, renew, revoke across NGINX, Apache, HAProxy, F5, Kubernetes, and ten other targets.">
   <meta property="og:image" content="https://certctl.io/screenshot-dashboard.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="certctl">
@@ -754,9 +754,9 @@
         </p>
 
         <div class="code-block" aria-label="Quick start commands">
-<span class="comment"># Three commands. One control plane.</span>
+<span class="comment"># Three commands. One control plane. Seeded demo data.</span>
 <span class="prompt">$</span><span class="cmd"> git clone https://github.com/certctl-io/certctl.git</span>
-<span class="prompt">$</span><span class="cmd"> cd certctl &amp;&amp; docker compose -f deploy/docker-compose.yml up -d</span>
+<span class="prompt">$</span><span class="cmd"> cd certctl &amp;&amp; docker compose -f deploy/docker-compose.demo.yml up -d</span>
 <span class="prompt">$</span><span class="cmd"> open https://localhost:8443</span>
         </div>
 
@@ -864,8 +864,8 @@
             <h3>Install agents on your servers</h3>
             <p>
               Agents poll the server, generate keys locally, and submit CSRs.
-              Private keys never leave the host. Single binary; works on Linux,
-              macOS, Windows, ARM, x86.
+              Private keys never leave the host. Single Go binary; works on
+              Linux and macOS, ARM and x86.
             </p>
             <div class="step-code">$ curl -fsSL https://raw.githubusercontent.com/certctl-io/certctl/master/install-agent.sh | bash</div>
           </article>
@@ -874,9 +874,10 @@
             <div class="step-num">step 03</div>
             <h3>Manage from one dashboard</h3>
             <p>
-              35-page web UI for cert inventory, agent fleet, issuance pipelines,
-              audit trail, and policy management. Plus REST API, CLI, and an MCP
-              server for agentic workflows.
+              Comprehensive React dashboard for cert inventory, agent fleet,
+              issuance pipelines, CA hierarchy, approval queues, audit trail,
+              and policy management. Plus REST API, CLI, and an MCP server
+              for agentic workflows.
             </p>
             <div class="step-code">→ https://localhost:8443</div>
           </article>
@@ -901,17 +902,17 @@
           <div class="feat">
             <div class="feat-icon">// 01</div>
             <h3>Use any CA you already trust</h3>
-            <p>ACME (Let&rsquo;s Encrypt, ZeroSSL, Google Trust Services), step-ca, OpenSSL, Local CA, AWS ACM PCA, DigiCert, Entrust, GlobalSign, EJBCA, Vault.</p>
+            <p>ACME (Let&rsquo;s Encrypt, ZeroSSL, Google Trust Services), step-ca, OpenSSL / shell-script adapter, built-in Local CA, AWS ACM PCA, Google Cloud CAS, HashiCorp Vault PKI, DigiCert, Sectigo, GlobalSign, Entrust, EJBCA. Twelve native issuer connectors.</p>
           </div>
           <div class="feat">
             <div class="feat-icon">// 02</div>
             <h3>Deploy automatically to any server</h3>
-            <p>NGINX, Apache, HAProxy, Traefik, Caddy, Envoy, Postfix/Dovecot, F5 BIG-IP, IIS, Java keystore, Kubernetes Secrets, SSH, Windows cert store.</p>
+            <p>NGINX, Apache, HAProxy, Caddy, Traefik, Envoy, IIS, Windows Cert Store, Java keystore, Kubernetes Secrets, AWS ACM, Azure Key Vault, SSH known-hosts, Postfix + Dovecot, F5 BIG-IP. Fifteen native target connectors.</p>
           </div>
           <div class="feat">
             <div class="feat-icon">// 03</div>
             <h3>Find every cert you forgot about</h3>
-            <p>Filesystem scanning on agents. Network TLS probing across CIDR ranges. Cloud secret manager imports (AWS SM, Azure KV, GCP SM).</p>
+            <p>Filesystem scanning on agents. Network TLS probing across CIDR ranges. Cloud secret manager imports (AWS Secrets Manager, Azure Key Vault, GCP Secret Manager).</p>
           </div>
           <div class="feat">
             <div class="feat-icon">// 04</div>
@@ -921,22 +922,42 @@
           <div class="feat">
             <div class="feat-icon">// 05</div>
             <h3>Catch failures before they hit production</h3>
-            <p>Slack, Microsoft Teams, PagerDuty, OpsGenie, email (SMTP), webhooks. Per-policy retry with exponential backoff. Audit-trail of every dispatch.</p>
+            <p>Slack, Microsoft Teams, PagerDuty, OpsGenie, email (SMTP), webhooks. Per-policy retry with exponential backoff. Audit trail of every dispatch.</p>
           </div>
           <div class="feat">
             <div class="feat-icon">// 06</div>
             <h3>Run your fleet from one dashboard</h3>
-            <p>35-page React SPA. Prometheus metrics. Fleet overview, expiration heatmap, issuance pipelines, audit trail, policy editor.</p>
+            <p>Comprehensive React SPA. Prometheus metrics. Fleet overview, expiration heatmap, issuance pipelines, CA hierarchy view, approval queues, audit trail, policy editor.</p>
           </div>
           <div class="feat">
             <div class="feat-icon">// 07</div>
             <h3>Speaks every protocol that matters</h3>
-            <p>EST (RFC 7030), SCEP (RFC 8894 + Microsoft Intune), ACME ARI (RFC 9702), ACME EAB, S/MIME, channel binding (RFC 9266), NIST PQC (planned).</p>
+            <p>ACME (RFC 8555) as both client and server. ACME ARI (RFC 9773) for CA-driven renewal timing. ACME EAB. EST (RFC 7030). SCEP (RFC 8894) with native Microsoft Intune challenge dispatch and replay protection. S/MIME. Channel binding (RFC 9266). NIST PQC (planned).</p>
           </div>
           <div class="feat">
             <div class="feat-icon">// 08</div>
-            <h3>REST, CLI, MCP — wire it into anything</h3>
-            <p>~95 REST endpoints with OpenAPI spec. CLI for every operation. MCP server with 76 tools for AI-assistant integration. All optional, all auth-gated.</p>
+            <h3>REST, CLI, MCP for any workflow</h3>
+            <p>Comprehensive REST API with OpenAPI spec. CLI for every operation. MCP server for AI-assistant integration. All optional, all auth-gated.</p>
+          </div>
+          <div class="feat">
+            <div class="feat-icon">// 09</div>
+            <h3>Multi-level CA hierarchy as a primitive</h3>
+            <p>Root to intermediate to issuing CA chains, admin-gated CRUD, name constraints and path-length enforcement on every CA, end-to-end RFC 5280 path validation. Per-business-unit name-constrained sub-CAs without standing up a separate ADCS forest.</p>
+          </div>
+          <div class="feat">
+            <div class="feat-icon">// 10</div>
+            <h3>Approvals before high-stakes issuance</h3>
+            <p>Flag a certificate profile as requires-approval. Issuance request lands in a queue, a non-requester approves, the scheduler dispatches. Two-person integrity enforced at the service layer. Useful for root signing, code signing, EV server certs.</p>
+          </div>
+          <div class="feat">
+            <div class="feat-icon">// 11</div>
+            <h3>ACME server with two auth modes per profile</h3>
+            <p>Public-trust-style mode with full HTTP-01, DNS-01, and TLS-ALPN-01 validation. Trust-authenticated mode for internal PKI where the JWS-authenticated client is already the proof of identity. Useful for east-west service mesh certs where there is nowhere meaningful to mount HTTP-01.</p>
+          </div>
+          <div class="feat">
+            <div class="feat-icon">// 12</div>
+            <h3>HTTPS-only by design</h3>
+            <p>Control plane listens on TLS 1.3 only, no plaintext fallback. Fail-closed startup gate refuses to boot if the TLS bundle is unusable. Pull-only architecture means the server never reaches into your network. Config encryption at rest with AES-256-GCM.</p>
           </div>
         </div>
       </div>
@@ -980,9 +1001,11 @@
             <h3>Lifecycle + fleet</h3>
             <ul class="why-list">
               <li>Discovers existing certs across your fleet (filesystem scan + TLS network probe + cloud secret managers)</li>
-              <li>Deploys to NGINX, Apache, HAProxy, Traefik, Caddy, Envoy, F5 BIG-IP, IIS, Java keystore, Kubernetes Secrets, Postfix + Dovecot, SSH, Windows Cert Store</li>
+              <li>Deploys to NGINX, Apache, HAProxy, Caddy, Traefik, Envoy, IIS, Windows Cert Store, Java keystore, Kubernetes Secrets, AWS ACM, Azure Key Vault, SSH known-hosts, Postfix + Dovecot, F5 BIG-IP</li>
               <li>Renews + redeploys atomically before expiry, with rollback on failure</li>
               <li>Verifies the new cert is actually live via post-deploy TLS probe</li>
+              <li>Builds and manages multi-level CA hierarchies with name constraints and path-length enforcement</li>
+              <li>Gates high-stakes issuance behind human approval with two-person integrity</li>
               <li>Alerts via Slack, Microsoft Teams, PagerDuty, OpsGenie, email, webhooks</li>
               <li>Maintains an append-only audit trail of every action</li>
               <li>Web dashboard, REST API, full CLI, plus an MCP server for AI-assistant integration</li>
@@ -993,9 +1016,13 @@
         <p class="why-pairs">
           <strong>First-class issuer connectors:</strong>
           ACME (Let&rsquo;s Encrypt, ZeroSSL, Google Trust Services, any RFC 8555
-          server), AWS Private CA, DigiCert, Entrust, GlobalSign, Google Cloud
-          CAS, HashiCorp Vault, OpenSSL, Sectigo, certctl&rsquo;s own Local CA,
-          plus self-hosted EST (RFC 7030) and SCEP (RFC 8894) backends.
+          server), step-ca, OpenSSL / shell-script adapter, certctl&rsquo;s own
+          Local CA with sub-CA mode, AWS Private CA, Google Cloud CAS,
+          HashiCorp Vault PKI, EJBCA, DigiCert, Sectigo, GlobalSign, Entrust.
+          Twelve total. Plus self-hosted ACME (RFC 8555 + RFC 9773 ARI), SCEP
+          (RFC 8894 with Microsoft Intune challenge dispatch), and EST (RFC
+          7030) server endpoints for pointing existing client tooling
+          directly at certctl.
           <br>
           Pick whichever fits your environment. certctl handles everything around it.
         </p>
